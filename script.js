@@ -18,6 +18,7 @@ class Library {
 class Book extends Library{
 	bookNo = 0;
 	container = document.querySelector(".book-container");
+	isValid = true;
 
 	constructor(title, author, pages, status){
 		super()
@@ -60,9 +61,6 @@ class Book extends Library{
 					para.textContent = "Author: " + this.Library[this.bookNo].author;
 					break;
 				case 3:
-					para.textContent = "ID: " + this.Library[this.bookNo].Id;
-					break;
-				case 4:
 					para.textContent = "Title: " + this.Library[this.bookNo].title;
 					break;
 			}
@@ -108,25 +106,56 @@ class Book extends Library{
 		})
 	}
 
+	validateFormInputs() {
+		const form = document.querySelector("#book-form");
+  		const inputs = document.querySelectorAll("input");
+  		inputs.forEach(input => input.addEventListener("input", (event) => {
+  			const errorDisplayer = document.querySelector(`.${event.target.id}-error-message`);
+  			if (input.checkValidity()) {
+  				errorDisplayer.textContent = "";
+  				return;
+  			}
+  			if (event.target.checkValidity() === false) {
+  				if(event.target.validity.valueMissing === true){
+  					errorDisplayer.textContent = event.target.name + " is required!";
+  					this.isValid = false;
+  				} else if (event.target.validity.rangeUnderflow === true) {
+  					errorDisplayer.textContent = event.target.name + 
+  														" number can not be negative";
+  					this.isValid = false;
+  				} else if (event.target.validity.typeMismatch) {
+  					errorDisplayer.textContent = "the input type is not allowed";
+  					this.isValid = false;
+  				}
+  			}
+  		}))
+  		return this.isValid;
+	}
+
 	getFormData(){
+		this.validateFormInputs();
 		const form = document.querySelector("#book-form");
 		form.addEventListener("submit", (event) => {
-			event.preventDefault();
+			if(!this.isValid) {
+				event.preventDefault();
+			}
 
-			const formData = new FormData(event.target);
+			if (form.checkValidity()) {
+				const formData = new FormData(event.target);
 
-			let title = formData.get('Title');
-			let author = formData.get('Author');
-			let pages = formData.get('Pages');
-			let read = formData.get('Status');
+				let title = formData.get('Title');
+				let author = formData.get('Author');
+				let pages = formData.get('Pages');
+				let read = formData.get('Status');
 
-			let addedBook = new Book(title, author, pages, read);
-			this.addBookToLibrary(addedBook);
-			this.displayBooks(addedBook);
+				let addedBook = new Book(title, author, pages, read);
+				this.addBookToLibrary(addedBook);
+				this.displayBooks(addedBook);
 
-			let bookForm = document.querySelector("form");
-			bookForm.style.display = "none";
-			form.reset();
+				let bookForm = document.querySelector("form");
+				bookForm.style.display = "none";
+				form.reset();
+			}
 		})
 	}
 }
